@@ -1,7 +1,7 @@
 /**
  * Javadoc
  * 
- * @author Ludovic Lesur
+ * @author Ludo
  * @since 25/07/2019
  */
 

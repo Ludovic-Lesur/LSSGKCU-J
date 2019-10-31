@@ -1,7 +1,7 @@
 /**
  * Javadoc
  * 
- * @author Ludovic Lesur
+ * @author Ludo
  * @since 25/07/2019
  */
 
@@ -21,6 +21,7 @@ public class Zba {
 	public Zba() {
 		// Init sound.
 		zbaTurnOn = new Sound("zba", 1.0);
+		zbaTurnOn.setVolume(0.5);
 	}
 	
 	/* TURN ZBA ON.
@@ -29,6 +30,7 @@ public class Zba {
 	 */
 	public void on() {
 		zbaTurnOn.play();
+		System.out.println("ZBA on.");
 	}
 	
 	/* TURN ZBA OFF.
@@ -37,5 +39,6 @@ public class Zba {
 	 */
 	public void off() {
 		zbaTurnOn.stop();
+		System.out.println("ZBA off.");
 	}
 }

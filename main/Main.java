@@ -1,7 +1,7 @@
 /**
  * Javadoc
  * 
- * @author Ludovic Lesur
+ * @author Ludo
  * @since 31/03/2018
  */
 
@@ -24,6 +24,7 @@ public class Main {
 	private static volatile int lsmcuRxBufWriteIdx;
 	// Sounds.
 	private static Zba zba;
+	private static Zvm zvm;
 	
 	/* FILL RX COMMAND BUFFER.
 	 * @param pNewByte:	Incoming byte to store.
@@ -50,7 +51,7 @@ public class Main {
 		
 		/* LSMCU serial port */
 		// Open serial link.
-		lsmcuSerial = new Serial("LSMCU", "COM12", 9600);
+		lsmcuSerial = new Serial("LSMCU", "COM9", 9600);
 		boolean error = lsmcuSerial.open();
 		// Init buffer and indexes.
 		lsmcuRxBuffer = new int[LSMCU_RX_BUFFER_SIZE];
@@ -59,21 +60,27 @@ public class Main {
 		
 		/* Sounds */
 		zba = new Zba();
+		zvm = new Zvm();
 		
 		/* Main loop */
 		while (error == false) {
-			// Process incoming commands.
+			
+			/* Process incoming commands */
 			if (lsmcuRxBufWriteIdx != lsmcuRxBufReadIdx) {
 				int lsmcuCommand = lsmcuRxBuffer[lsmcuRxBufReadIdx];
 				System.out.println("LSMCU command = " + lsmcuCommand + ".");
 				// Decode command.
 				if (lsmcuCommand == Inputs.LSMCU_OUT_ZBA_ON.getNumber()) {
-					zba.on();
-					System.out.println("ZBA ON.");
+					zba.on();	
 				}
 				else if (lsmcuCommand == Inputs.LSMCU_OUT_ZBA_OFF.getNumber()) {
 					zba.off();
-					System.out.println("ZBA OFF.");
+				}
+				else if (lsmcuCommand == Inputs.LSMCU_OUT_ZVM_ON.getNumber()) {
+					zvm.on();
+				}
+				else if (lsmcuCommand == Inputs.LSMCU_OUT_ZVM_OFF.getNumber()) {
+					zvm.off();
 				}
 				// Update read index and manage rollover.
 				lsmcuRxBufReadIdx++;
@@ -81,6 +88,9 @@ public class Main {
 					lsmcuRxBufReadIdx = 0;
 				}
 			}
+			
+			/* Run sounds task */
+			zvm.task();
 		}
 		System.out.println("End of program.");
 	}

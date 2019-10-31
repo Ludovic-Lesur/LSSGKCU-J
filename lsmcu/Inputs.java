@@ -1,7 +1,7 @@
 /**
  * Javadoc
  * 
- * @author Ludovic Lesur
+ * @author Ludo
  * @since 31/03/2018
  */
 
@@ -12,15 +12,14 @@ public enum Inputs {
 	LSMCU_OUT_ZBA_OFF, 			// Sound only.
 	LSMCU_OUT_RSEC_ON, 			// Sound only.
 	LSMCU_OUT_RSEC_OFF, 		// Sound only.
-	LSMCU_OUT_BL_ON, 			// Sound + Keyboard.
-	LSMCU_OUT_BL_OFF,			// Sound + Keyboard.
+	LSMCU_OUT_ZDV_ON, 			// Sound + Keyboard.
+	LSMCU_OUT_ZDV_OFF,			// Sound + Keyboard.
 	LSMCU_OUT_ZPT_BACK_UP,		// Sound + Keyboard.
 	LSMCU_OUT_ZPT_BACK_DOWN,	// Sound + Keyboard.
 	LSMCU_OUT_ZPT_FRONT_UP,		// Sound + Keyboard.
 	LSMCU_OUT_ZPT_FRONT_DOWN,	// Sound + Keyboard.
+	LSMCU_OUT_ZDJ_OFF,			// Sound + Keyboard.
 	LSMCU_OUT_ZEN_ON,			// Sound + Keyboard.
-	LSMCU_OUT_ZEN_OFF,			// Sound + Keyboard.
-	LSMCU_OUT_ZDJ_OPEN,			// Sound + Keyboard.
 	LSMCU_OUT_ZCAZCD_STATE0,	// Sound only.
 	LSMCU_OUT_ZCAZCD_STATE1,	// Sound only.
 	LSMCU_OUT_ZCAZCD_STATE2,	// Sound only.
