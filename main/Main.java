@@ -51,7 +51,7 @@ public class Main {
 		
 		/* LSMCU serial port */
 		// Open serial link.
-		lsmcuSerial = new Serial("LSMCU", "COM9", 9600);
+		lsmcuSerial = new Serial("LSMCU", "COM3", 9600);
 		boolean error = lsmcuSerial.open();
 		// Init buffer and indexes.
 		lsmcuRxBuffer = new int[LSMCU_RX_BUFFER_SIZE];
