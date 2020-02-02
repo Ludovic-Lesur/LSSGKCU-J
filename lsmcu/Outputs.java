@@ -8,6 +8,8 @@
 package lsmcu;
 
 public enum Outputs {
+	// Common.
+	LSMCU_IN_KVB_ALL_OFF,
 	// KVB lights.
 	LSMCU_IN_KVB_LVAL_BLINK,
 	LSMCU_IN_KVB_LVAL_ON,
@@ -44,10 +46,11 @@ public enum Outputs {
 	
 	/* Data members */
 	private final int commandNumber;
+	private static final int TCH_SPEED_MAX_KMH = 160;
 	
 	private static class CommandCounterHolder {
-		// Bytes 0 to 160 are reserved for coding speed in km/h.
-		private static int commandCounter = 161;
+		// Bytes 0 to TCH_SPEED_MAX_KMH are reserved for coding speed in km/h.
+		private static int commandCounter = TCH_SPEED_MAX_KMH + 1;
 	}
 	
 	/* CONSTRUCTOR OF EACH ELEMENT OF ENUMERATION.

@@ -19,8 +19,17 @@ public class Zvm {
 	private Sound zvmTurnOff;
 	// Internal state machine.
 	private boolean zvmSwitch;
-	private enum ZvmStateEnum {ZVM_STATE_OFF, ZVM_STATE_TURNON, ZVM_STATE_TURNON_TO_ON1, ZVM_STATE_ON1, ZVM_STATE_ON1_TO_ON2, ZVM_STATE_ON2, ZVM_STATE_ON2_TO_ON1, ZVM_STATE_TURNOFF};
+	private enum ZvmStateEnum {
+		ZVM_STATE_OFF,
+		ZVM_STATE_TURNON,
+		ZVM_STATE_TURNON_TO_ON1,
+		ZVM_STATE_ON1,
+		ZVM_STATE_ON1_TO_ON2,
+		ZVM_STATE_ON2,
+		ZVM_STATE_ON2_TO_ON1,
+		ZVM_STATE_TURNOFF};
 	private ZvmStateEnum zvmState;
+	// Macros.
 	private static final int ZVM_FADE_DURATION_MS = 2000;
 	private static final int ZVM_FADE_MARGIN_MS = 1000; // Added to fade duration.
 	
@@ -68,17 +77,14 @@ public class Zvm {
 	public void task() {
 		/* Perform internal state machine */
 		switch (zvmState) {
-		// Off.
 		case ZVM_STATE_OFF:
 			if (zvmSwitch == true) {
 				zvmState = ZvmStateEnum.ZVM_STATE_TURNON;
 				// Start playing turn-on sound.
 				zvmTurnOn.setVolume(1.0); // Fade-in effect is allready integrated in the sound itself.
 				zvmTurnOn.play();
-				System.out.println("Start TurnOn");
 			}
 			break;
-		// Turn-on.
 		case ZVM_STATE_TURNON:
 			if (zvmSwitch == false) {
 				zvmState = ZvmStateEnum.ZVM_STATE_TURNOFF;
@@ -106,7 +112,6 @@ public class Zvm {
 				}
 			}
 			break;
-		// Turn-on to On1.
 		case ZVM_STATE_TURNON_TO_ON1:
 			if (zvmSwitch == false) {
 				zvmState = ZvmStateEnum.ZVM_STATE_TURNOFF;
@@ -131,7 +136,6 @@ public class Zvm {
 				}
 			}
 			break;
-		// On1.
 		case ZVM_STATE_ON1:
 			if (zvmSwitch == false) {
 				zvmState = ZvmStateEnum.ZVM_STATE_TURNOFF;
@@ -153,11 +157,9 @@ public class Zvm {
 					zvmOn2.setVolume(0.0);
 					zvmOn2.play();
 					zvmOn2.saveFadeParameters();
-					System.out.println("Start On2");
 				}
 			}
 			break;
-		// On1 to On2.
 		case ZVM_STATE_ON1_TO_ON2:
 			if (zvmSwitch == false) {
 				zvmState = ZvmStateEnum.ZVM_STATE_TURNOFF;
@@ -182,7 +184,6 @@ public class Zvm {
 				}
 			}
 			break;
-		// On2.
 		case ZVM_STATE_ON2:
 			if (zvmSwitch == false) {
 				zvmState = ZvmStateEnum.ZVM_STATE_TURNOFF;
@@ -204,11 +205,9 @@ public class Zvm {
 					zvmOn1.setVolume(0.0);
 					zvmOn1.play();
 					zvmOn1.saveFadeParameters();
-					System.out.println("Start On1");
 				}
 			}
 			break;
-		// On2 to On1.
 		case ZVM_STATE_ON2_TO_ON1:
 			if (zvmSwitch == false) {
 				zvmState = ZvmStateEnum.ZVM_STATE_TURNOFF;
@@ -233,7 +232,6 @@ public class Zvm {
 				}
 			}
 			break;
-		// Turn-off.
 		case ZVM_STATE_TURNOFF:
 			// Perform On1, On2 and turn-on fade-out and turn-off fade-in.
 			int turnOffFadeEnd = zvmTurnOff.computeFadeInVolume(ZVM_FADE_DURATION_MS);

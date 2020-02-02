@@ -20,8 +20,7 @@ public class Zba {
 	 */
 	public Zba() {
 		// Init sound.
-		zbaTurnOn = new Sound("zba", 1.0);
-		zbaTurnOn.setVolume(0.5);
+		zbaTurnOn = new Sound("zbaTurnOn", 1.0);
 	}
 	
 	/* TURN ZBA ON.
@@ -30,7 +29,7 @@ public class Zba {
 	 */
 	public void on() {
 		zbaTurnOn.play();
-		System.out.println("ZBA on.");
+		System.out.println("ZBA *** On.");
 	}
 	
 	/* TURN ZBA OFF.
@@ -39,6 +38,6 @@ public class Zba {
 	 */
 	public void off() {
 		zbaTurnOn.stop();
-		System.out.println("ZBA off.");
+		System.out.println("ZBA *** Off.");
 	}
 }

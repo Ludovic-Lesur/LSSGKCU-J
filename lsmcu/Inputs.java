@@ -79,10 +79,11 @@ public enum Inputs {
 	
 	/* Data members */
 	private final int commandNumber;
+	private static final int CP_MAX_VALUE_DECIBARS = 100;
 	
 	private static class CommandCounterHolder {
 		// Bytes 0 to 100 are reserved for coding CP pressure*10 in bars.
-		private static int commandCounter = 101;
+		private static int commandCounter = CP_MAX_VALUE_DECIBARS + 1;
 	}
 	
 	/* CONSTRUCTOR OF EACH ELEMENT OF ENUMERATION.

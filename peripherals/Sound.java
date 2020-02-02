@@ -53,12 +53,12 @@ public class Sound {
 			soundClip = AudioSystem.getClip();
 			soundInputStream = AudioSystem.getAudioInputStream(new File(wavFile));
 			soundClip.open(soundInputStream);
-			System.out.println("Audio file " + wavFile + " successfully opened.");
+			System.out.println("SOUND *** Audio file " + wavFile + " successfully opened.");
 			// Save length.
 			soundDurationMs = (int) (soundClip.getMicrosecondLength() / 1000);
 		}
 		catch (IOException e) {
-			System.err.println("Audio file " + wavFile + " not found.");
+			System.err.println("SOUND *** Audio file " + wavFile + " not found.");
 		}
 		catch (Exception e){
 			System.err.println(e.toString());

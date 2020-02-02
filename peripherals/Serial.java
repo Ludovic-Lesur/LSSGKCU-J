@@ -10,12 +10,11 @@ package peripherals;
 import java.util.*;
 import java.io.*;
 import gnu.io.*;
-import main.*;
+import lsmcu.*;
 
 public class Serial implements SerialPortEventListener {
 	
 	/* Data members */
-	private String serialName;
 	private String serialNumPort;
 	private int serialBaudRate;
 	private SerialPort serialPort;
@@ -28,8 +27,7 @@ public class Serial implements SerialPortEventListener {
 	 * @param pNumPort:	Port number to connect, should be "COMx" where x is an integer.
 	 * @return: 		None.
 	 */
-	public Serial(String pName, String pNumPort, int pBaudRate) {
-		serialName = pName;
+	public Serial(String pNumPort, int pBaudRate) {
 		serialNumPort = pNumPort;
 		serialBaudRate = pBaudRate;
 	}
@@ -40,24 +38,32 @@ public class Serial implements SerialPortEventListener {
 	 */
 	public boolean open() {
 		boolean error = false;
+		int numberOfPorts = 0;
 		CommPortIdentifier portId = null;
 		// Get all the COM ports currently connected.
 		@SuppressWarnings("rawtypes")
 		Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
 		// Check if 'numPort' is connected.
-		System.out.print("List of serial ports:");
+		System.out.print("SERIAL *** List of available serial ports:");
 		while (portEnum.hasMoreElements()) {
 			CommPortIdentifier currPortId = (CommPortIdentifier) portEnum.nextElement();
 			System.out.print(" " + currPortId.getName());
 			if (currPortId.getName().equals(serialNumPort)) {
 				portId = currPortId;
 			}
+			numberOfPorts++;
 		}
-		System.out.print(".\n" + serialName + " serial port opening: ");
+		// Debug print.
+		if (numberOfPorts == 0) {
+			System.out.print(" None");
+		}
+		System.out.println(".");
+		// Check port ID.
 		if (portId == null) {
-			System.out.println("failed.");
+			error = true;
 		}
 		else {
+			System.out.print("SERIAL *** " + serialNumPort + " serial port opening: ");
 			try {
 				// Open serial port
 				serialPort = (SerialPort) portId.open(this.getClass().getName(), SERIAL_TIME_OUT);
@@ -67,14 +73,14 @@ public class Serial implements SerialPortEventListener {
 				serialPort.addEventListener(this);
 				serialPort.notifyOnDataAvailable(true);
 				serialOutput = serialPort.getOutputStream();
-				System.out.println("OK.");
+				System.out.println("Success.");
 			}
 			catch (PortInUseException e) {
-				System.out.println("allready in use !");
+				System.out.println("Failed (allready in use).");
 				error = true;
 			}
 			catch (Exception e) {
-				System.err.println(e.toString());
+				System.out.println("Failed (" + e.toString() + ").");
 				error = true;
 			}
 		}
@@ -88,7 +94,7 @@ public class Serial implements SerialPortEventListener {
 	public void sendByte(int pByteToSend) throws IOException {
 	    if ((serialOutput != null) && (pByteToSend >= 0) && (pByteToSend <= 255)) {
 	    	// Display the binary and decimal representation of the byte sent
-	    	System.out.println("Send data '" + Integer.toBinaryString(pByteToSend) + "' = " + pByteToSend + " to " + serialName);
+	    	System.out.println("Send data '" + Integer.toBinaryString(pByteToSend) + "' = " + pByteToSend + " to " + serialNumPort);
 	    	serialOutput.write(pByteToSend);
 	    }
 	}
@@ -104,7 +110,7 @@ public class Serial implements SerialPortEventListener {
 				//System.out.println("Serial RX = " + rxByte);
 				if (rxByte != -1) {
 					// Fill LSMCU RX buffer.
-					Main.fillRxBuffer(rxByte);
+					Lsmcu.fillRxBuffer(rxByte);
 				}
 			}
 			catch (Exception e) {
