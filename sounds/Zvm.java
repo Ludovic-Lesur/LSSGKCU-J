@@ -30,7 +30,8 @@ public class Zvm {
 		ZVM_STATE_TURNOFF};
 	private ZvmStateEnum zvmState;
 	// Macros.
-	private static final int ZVM_FADE_DURATION_MS = 2000;
+	private static final int ZVM_FADE_DURATION_MS = 3000;
+	private static final int ZVM_FADE_OFF_DURATION_MS = 1000;
 	private static final int ZVM_FADE_MARGIN_MS = 1000; // Added to fade duration.
 	
 	/* CONSTRUCTOR FOR CLASS ZVM.
@@ -40,13 +41,9 @@ public class Zvm {
 	public Zvm() {
 		// Init sounds.
 		zvmTurnOn = new Sound("ventilateurs_allumage", 1.0);
-		zvmTurnOn.setVolume(0.0);
 		zvmOn1 = new Sound("ventilateurs_marche", 1.0);
-		zvmOn1.setVolume(0.0);
 		zvmOn2 = new Sound("ventilateurs_marche", 1.0);
-		zvmOn2.setVolume(0.0);
 		zvmTurnOff = new Sound("ventilateurs_extinction", 1.0);
-		zvmTurnOff.setVolume(0.0);
 		// Init state machine.
 		zvmSwitch = false;
 		zvmState = ZvmStateEnum.ZVM_STATE_OFF;
@@ -98,7 +95,7 @@ public class Zvm {
 				zvmTurnOff.saveFadeParameters();
 			}
 			else {
-				if (zvmTurnOn.getPosition() > (zvmTurnOn.getDuration() - (ZVM_FADE_DURATION_MS + ZVM_FADE_MARGIN_MS))) {
+				if (zvmTurnOn.getPositionMs() > (zvmTurnOn.getDurationMs() - (ZVM_FADE_DURATION_MS + ZVM_FADE_MARGIN_MS))) {
 					zvmState = ZvmStateEnum.ZVM_STATE_TURNON_TO_ON1;
 					// Save turn-on volume.
 					zvmTurnOn.saveFadeParameters();
@@ -106,7 +103,6 @@ public class Zvm {
 					zvmOn1.setVolume(0.0);
 					zvmOn1.play();
 					zvmOn1.saveFadeParameters();
-					System.out.println("Start On1");
 					// Stop playing turn-off sound (in case it was running).
 					zvmTurnOff.stop();
 				}
@@ -126,8 +122,8 @@ public class Zvm {
 			}
 			else {
 				// Perform turn-on fade-out and On1 fade-in. 
-				int on1FadeEnd = zvmOn1.computeFadeInVolume(ZVM_FADE_DURATION_MS);
-				int turnOnFadeEnd = zvmTurnOn.computeFadeOutVolume(ZVM_FADE_DURATION_MS);
+				int on1FadeEnd = zvmOn1.fadeIn(ZVM_FADE_DURATION_MS);
+				int turnOnFadeEnd = zvmTurnOn.fadeOut(ZVM_FADE_DURATION_MS);
 				// Change state when effect is complete.
 				if ((on1FadeEnd > 0) && (turnOnFadeEnd > 0)) {
 					zvmState = ZvmStateEnum.ZVM_STATE_ON1;
@@ -149,7 +145,7 @@ public class Zvm {
 				zvmTurnOff.saveFadeParameters();
 			}
 			else {
-				if (zvmOn1.getPosition() > (zvmOn1.getDuration() - (ZVM_FADE_DURATION_MS + ZVM_FADE_MARGIN_MS))) {
+				if (zvmOn1.getPositionMs() > (zvmOn1.getDurationMs() - (ZVM_FADE_DURATION_MS + ZVM_FADE_MARGIN_MS))) {
 					zvmState = ZvmStateEnum.ZVM_STATE_ON1_TO_ON2;
 					// Save On1 volume.
 					zvmOn1.saveFadeParameters();
@@ -174,8 +170,8 @@ public class Zvm {
 			}
 			else {
 				// Perform On1 fade-out and On2 fade-in.
-				int on2FadeEnd = zvmOn2.computeFadeInVolume(ZVM_FADE_DURATION_MS);
-				int on1FadeEnd = zvmOn1.computeFadeOutVolume(ZVM_FADE_DURATION_MS);
+				int on2FadeEnd = zvmOn2.fadeIn(ZVM_FADE_DURATION_MS);
+				int on1FadeEnd = zvmOn1.fadeOut(ZVM_FADE_DURATION_MS);
 				// Change state when effect is complete.
 				if ((on2FadeEnd > 0) && (on1FadeEnd > 0)) {
 					zvmState = ZvmStateEnum.ZVM_STATE_ON2;
@@ -197,7 +193,7 @@ public class Zvm {
 				zvmTurnOff.saveFadeParameters();
 			}
 			else {
-				if (zvmOn2.getPosition() > (zvmOn2.getDuration() - (ZVM_FADE_DURATION_MS + ZVM_FADE_MARGIN_MS))) {
+				if (zvmOn2.getPositionMs() > (zvmOn2.getDurationMs() - (ZVM_FADE_DURATION_MS + ZVM_FADE_MARGIN_MS))) {
 					zvmState = ZvmStateEnum.ZVM_STATE_ON2_TO_ON1;
 					// Save On2 volume.
 					zvmOn2.saveFadeParameters();
@@ -222,8 +218,8 @@ public class Zvm {
 			}
 			else {
 				// Perform On2 fade-out and On1 fade-in.
-				int on1FadeEnd = zvmOn1.computeFadeInVolume(ZVM_FADE_DURATION_MS);
-				int on2FadeEnd = zvmOn2.computeFadeOutVolume(ZVM_FADE_DURATION_MS);
+				int on1FadeEnd = zvmOn1.fadeIn(ZVM_FADE_DURATION_MS);
+				int on2FadeEnd = zvmOn2.fadeOut(ZVM_FADE_DURATION_MS);
 				// Change state when effect is complete.
 				if ((on1FadeEnd > 0) && (on2FadeEnd > 0)) {
 					zvmState = ZvmStateEnum.ZVM_STATE_ON1;
@@ -234,10 +230,10 @@ public class Zvm {
 			break;
 		case ZVM_STATE_TURNOFF:
 			// Perform On1, On2 and turn-on fade-out and turn-off fade-in.
-			int turnOffFadeEnd = zvmTurnOff.computeFadeInVolume(ZVM_FADE_DURATION_MS);
-			int turnOnFadeEnd = zvmTurnOn.computeFadeOutVolume(ZVM_FADE_DURATION_MS);
-			int on1FadeEnd = zvmOn1.computeFadeOutVolume(ZVM_FADE_DURATION_MS);
-			int on2FadeEnd = zvmOn2.computeFadeOutVolume(ZVM_FADE_DURATION_MS);
+			int turnOffFadeEnd = zvmTurnOff.fadeIn(ZVM_FADE_OFF_DURATION_MS);
+			int turnOnFadeEnd = zvmTurnOn.fadeOut(ZVM_FADE_OFF_DURATION_MS);
+			int on1FadeEnd = zvmOn1.fadeOut(ZVM_FADE_OFF_DURATION_MS);
+			int on2FadeEnd = zvmOn2.fadeOut(ZVM_FADE_OFF_DURATION_MS);
 			// Change state when effect is complete.
 			if ((turnOffFadeEnd > 0) && (turnOnFadeEnd > 0) && (on1FadeEnd > 0) && (on2FadeEnd > 0)) {
 				zvmState = ZvmStateEnum.ZVM_STATE_OFF;

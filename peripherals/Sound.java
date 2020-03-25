@@ -24,11 +24,12 @@ public class Sound {
 	// Fade effects.
 	private enum SoundFadeEquationEnum {SOUND_FADE_EQUATION_ELLIPSE, SOUND_FADE_EQUATION_LINEAR};
 	private SoundFadeEquationEnum soundFadeEquation;
-	private double soundStartVolume;
-	private int soundStartPosition;
+	private double soundFadeStartVolume;
+	private int soundFadeStartPositionMs;
 	// Debug.
-	//private long m;
-	//private long n;
+	private long m;
+	private long n;
+	private long p;
 	
 	/* CONSTRUCTOR FOR CLASS SOUND.
 	 * @param pName:		Name of the file (without path and extension).
@@ -41,11 +42,11 @@ public class Sound {
 		if (soundMaxVolume > 1.0) soundMaxVolume = 1.0;
 		if (soundMaxVolume < 0.0) soundMaxVolume = 0.0;
 		// Init members.
-		soundCurrentVolume = 1.0;
-		soundStartVolume = 1.0;
-		soundStartPosition = 0;
+		soundCurrentVolume = 0.0;
+		soundFadeStartVolume = 0.0;
+		soundFadeStartPositionMs = 0;
 		soundIsPlaying = 0;
-		soundFadeEquation = SoundFadeEquationEnum.SOUND_FADE_EQUATION_ELLIPSE;
+		soundFadeEquation = SoundFadeEquationEnum.SOUND_FADE_EQUATION_LINEAR;
 		// Create full file name.
 		String wavFile = SOUND_WAV_FILES_PATH + pName + SOUND_WAV_EXTENSION;
 		try {
@@ -56,6 +57,8 @@ public class Sound {
 			System.out.println("SOUND *** Audio file " + wavFile + " successfully opened.");
 			// Save length.
 			soundDurationMs = (int) (soundClip.getMicrosecondLength() / 1000);
+			// Mute sound by default.
+			this.setVolume(0.0);
 		}
 		catch (IOException e) {
 			System.err.println("SOUND *** Audio file " + wavFile + " not found.");
@@ -64,8 +67,9 @@ public class Sound {
 			System.err.println(e.toString());
 		}
 		// Debug.
-		//m = 0;
-		//n = 0;
+		m = 0;
+		n = 0;
+		p = 0;
 	}
 	
 	/* PLAY THE SOUND
@@ -111,10 +115,21 @@ public class Sound {
     	double realVolume = soundCurrentVolume * soundMaxVolume;
     	// Set volume.
     	try {
-    		FloatControl gainControl = (FloatControl) soundClip.getControl(FloatControl.Type.MASTER_GAIN);        
-    	    gainControl.setValue(20f * (float) Math.log10(realVolume));
+    		FloatControl gainControl = (FloatControl) soundClip.getControl(FloatControl.Type.MASTER_GAIN);
+    		float gainDbMin = gainControl.getMinimum();
+    		float gainDb = 20.0f * (float) Math.log10(realVolume);
+    		// Clamp gain to minimum.
+    		if (gainDb < gainDbMin) {
+    			gainDb = gainDbMin;
+    		}
+    	    gainControl.setValue(gainDb);
+    	    System.out.println("gainDb=" + gainDb);
+    	    //if (System.currentTimeMillis() > p) {
+    			//p = System.currentTimeMillis() + 100;
+    			//System.out.println("gainDb=" + gainDb);
+    		//}
     	}
-    	catch (Exception e){
+    	catch (Exception e) {
     		
     	}
 	}
@@ -123,7 +138,7 @@ public class Sound {
 	 * @param:	None.
 	 * @return:	Sound duration in milliseconds.
 	 */
-	public int getDuration() {
+	public int getDurationMs() {
 		return soundDurationMs;
 	}
 	
@@ -131,7 +146,7 @@ public class Sound {
 	 * @param:	None.
 	 * @return:	Current position in milliseconds.
 	 */
-	public int getPosition() {
+	public int getPositionMs() {
 		return (int) (soundClip.getMicrosecondPosition() / 1000);
 	}
 	
@@ -140,50 +155,50 @@ public class Sound {
 	 * @return: None.
 	 */
 	public void saveFadeParameters() {
-		soundStartPosition = this.getPosition();
-		soundStartVolume = this.getVolume();
+		soundFadeStartPositionMs = this.getPositionMs();
+		soundFadeStartVolume = this.getVolume();
 	}
 	
 	/* PERFORM FADE-IN EFFECT.
 	 * @param pFadeDuration:	Fade effect duration in milliseconds.
 	 * @return fadeEnd			'1' if the fade effect is finished, '0' otherwise.
 	 */
-	public int computeFadeInVolume(int pFadeDuration) {
+	public int fadeIn(int pFadeDuration) {
 		double fadeVolume = this.getVolume();
 		int fadeEnd = 0;
 		// Ensure sound is playing and current position is greater or equal the start position.
-		if ((this.getPosition() >= soundStartPosition) && (soundIsPlaying > 0)) {
-			if ((this.getPosition() >= (soundStartPosition + pFadeDuration)) || (this.getPosition() >= soundDurationMs)) {
+		if ((this.getPositionMs() >= soundFadeStartPositionMs) && (soundIsPlaying > 0)) {
+			if ((this.getPositionMs() >= (soundFadeStartPositionMs + pFadeDuration)) || (this.getPositionMs() >= soundDurationMs)) {
 				// Clamp zone.
 				fadeVolume = 1.0;
 				fadeEnd = 1;
 			}
 			else {
-				// Fade zone.
 				// Fade zone: apply selected equation.
 				switch (soundFadeEquation) {
 				case SOUND_FADE_EQUATION_LINEAR:
 					// Linear equation.
+					fadeVolume = (double) (soundFadeStartVolume + ((1.0 - soundFadeStartVolume) * ((double) (this.getPositionMs()) - (double) (soundFadeStartPositionMs))) / ((double) pFadeDuration));
 					break;
 				case SOUND_FADE_EQUATION_ELLIPSE:
 					// Ellipse equation.
-					fadeVolume = (double) (soundStartVolume + (1.0 - soundStartVolume) * Math.sqrt(1 - (Math.pow((this.getPosition() - soundStartPosition - pFadeDuration), 2) / Math.pow(pFadeDuration, 2))));
+					fadeVolume = (double) (soundFadeStartVolume + (1.0 - soundFadeStartVolume) * Math.sqrt(1 - (Math.pow((this.getPositionMs() - soundFadeStartPositionMs - pFadeDuration), 2) / Math.pow(pFadeDuration, 2))));
 					break;
 				default:
 					break;
 				}
 			}
+			// Apply new volume.
+			this.setVolume(fadeVolume);
+			//if (System.currentTimeMillis() > m) {
+				//m = System.currentTimeMillis() + 100;
+				//System.out.println("fadeInVolume=" + fadeVolume + " fadeEnd=" + fadeEnd);
+			//}
 		}
 		else {
 			// Error.
 			fadeEnd = 1;
 		}
-		// Apply new volume.
-		this.setVolume(fadeVolume);
-		//if (System.currentTimeMillis() > m) {
-			//m = System.currentTimeMillis() + 100;
-			//System.out.println("fadeInVolume=" + fadeVolume + " fadeEnd=" + fadeEnd);
-		//}
 		// Return end flag.
 		return fadeEnd;
 	}
@@ -192,12 +207,12 @@ public class Sound {
 	 * @param pFadeDuration:	Fade effect duration in milliseconds.
 	 * @return fadeEnd			'1' if the fade effect is finished, '0' otherwise.
 	 */
-	public int computeFadeOutVolume(int pFadeDuration) {
+	public int fadeOut(int pFadeDuration) {
 		double fadeVolume = this.getVolume();
 		int fadeEnd = 0;
 		// Ensure sound is playing and current position is greater or equal the start position.
-		if ((this.getPosition() >= soundStartPosition) && (soundIsPlaying > 0)) {
-			if ((this.getPosition() >= (soundStartPosition + pFadeDuration)) || (this.getPosition() >= soundDurationMs)) {
+		if ((this.getPositionMs() >= soundFadeStartPositionMs) && (soundIsPlaying > 0)) {
+			if ((this.getPositionMs() >= (soundFadeStartPositionMs + pFadeDuration)) || (this.getPositionMs() >= soundDurationMs)) {
 				// Clamp zone.
 				fadeVolume = 0.0;
 				fadeEnd = 1;
@@ -207,26 +222,27 @@ public class Sound {
 				switch (soundFadeEquation) {
 				case SOUND_FADE_EQUATION_LINEAR:
 					// Linear equation.
+					fadeVolume = (double) (soundFadeStartVolume - (soundFadeStartVolume * ((double) (this.getPositionMs()) - (double) (soundFadeStartPositionMs))) / ((double) pFadeDuration));
 					break;
 				case SOUND_FADE_EQUATION_ELLIPSE:
 					// Ellipse equation.
-					fadeVolume = (double) (soundStartVolume * Math.sqrt(1 - (Math.pow((this.getPosition() - soundStartPosition), 2) / Math.pow(pFadeDuration, 2))));
+					fadeVolume = (double) (soundFadeStartVolume * Math.sqrt(1 - (Math.pow((this.getPositionMs() - soundFadeStartPositionMs), 2) / Math.pow(pFadeDuration, 2))));
 					break;
 				default:
 					break;
 				}
+			}
+			// Apply new volume.
+			this.setVolume(fadeVolume);
+			if (System.currentTimeMillis() > n) {
+				n = System.currentTimeMillis() + 100;
+				System.out.println("fadeoutVolume=" + fadeVolume + " fadeEnd=" + fadeEnd);
 			}
 		}
 		else {
 			// Error.
 			fadeEnd = 1;
 		}
-		// Apply new volume.
-		this.setVolume(fadeVolume);
-		//if (System.currentTimeMillis() > n) {
-			//n = System.currentTimeMillis() + 100;
-			//System.out.println("fadeoutVolume=" + fadeVolume + " fadeEnd=" + fadeEnd);
-		//}
 		// Return end flag.
 		return fadeEnd;
 	}

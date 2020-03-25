@@ -43,6 +43,10 @@ public class Main {
 		// KVB calculator.
 		kvb = new Kvb();
 		
+		Sound test;
+		test = new Sound("ventilateurs_extinction", 1.0);
+		test.play();
+		
 		/* Main loop */
 		while (lsmcu.getStatus() == false) {
 			// Process incoming commands.
@@ -51,6 +55,7 @@ public class Main {
 			zvm.task();
 			// Run KVB calculator task.
 			kvb.task();
+			test.fadeIn(1000);
 		}
 		
 		/* End of program */

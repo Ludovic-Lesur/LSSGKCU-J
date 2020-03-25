@@ -93,6 +93,12 @@ public class Lsmcu {
 			else if (lsmcuCommand == Inputs.LSMCU_OUT_ZBA_OFF.getNumber()) {
 				Main.zba.off();
 			}
+			else if (lsmcuCommand == Inputs.LSMCU_OUT_ZDV_ON.getNumber()) {
+				Main.kvb.setBlLockState(true);
+			}
+			else if (lsmcuCommand == Inputs.LSMCU_OUT_ZDV_OFF.getNumber()) {
+				Main.kvb.setBlLockState(false);
+			}
 			else if (lsmcuCommand == Inputs.LSMCU_OUT_ZVM_ON.getNumber()) {
 				Main.zvm.on();
 			}
